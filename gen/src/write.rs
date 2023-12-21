@@ -1123,7 +1123,14 @@ fn write_rust_function_shim_impl(
     if sig.throws {
         out.builtin.rust_error = true;
         writeln!(out, "  if (error$.ptr) {{");
+
+        writeln!(out, "#ifdef RUST_CXX_NO_EXCEPTIONS");
+        writeln!(out, "    ::std::fprintf(stderr, \"Error in rust code: \\\"%s\\\". Aborting.\\n\", error$.ptr);"
+            );
+        writeln!(out, "    ::std::abort();");
+        writeln!(out, "#else // RUST_CXX_NO_EXCEPTIONS");
         writeln!(out, "    throw ::rust::impl<::rust::Error>::error(error$);");
+        writeln!(out, "#endif // RUST_CXX_NO_EXCEPTIONS");
         writeln!(out, "  }}");
     }
     if indirect_return {

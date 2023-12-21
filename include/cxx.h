@@ -384,16 +384,28 @@ private:
 #ifndef CXXBRIDGE1_RUST_ERROR
 #define CXXBRIDGE1_RUST_ERROR
 // https://cxx.rs/binding/result.html
-class Error final : public std::exception {
+class Error final
+#ifndef RUST_CXX_NO_EXCEPTIONS
+    : public std::exception
+#endif // RUST_CXX_NO_EXCEPTIONS
+{
 public:
   Error(const Error &);
   Error(Error &&) noexcept;
-  ~Error() noexcept override;
+  ~Error() noexcept
+#ifndef RUST_CXX_NO_EXCEPTIONS
+      override
+#endif // RUST_CXX_NO_EXCEPTIONS
+      ;
 
   Error &operator=(const Error &) &;
   Error &operator=(Error &&) &noexcept;
 
-  const char *what() const noexcept override;
+  const char *what() const noexcept
+#ifndef RUST_CXX_NO_EXCEPTIONS
+      override
+#endif // RUST_CXX_NO_EXCEPTIONS
+      ;
 
 private:
   Error() noexcept = default;

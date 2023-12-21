@@ -123,7 +123,12 @@ pub(super) fn write(out: &mut OutFile) {
         writeln!(out, "#include <cstring>");
     }
     if exception && !cxx_header {
+        writeln!(out, "#ifndef RUST_CXX_NO_EXCEPTIONS");
         writeln!(out, "#include <exception>");
+        writeln!(out, "#else");
+        writeln!(out, "#include <cstdio> // for fprintf()");
+        writeln!(out, "#include <cstdlib> // for abort()");
+        writeln!(out, "#endif");
     }
     if functional {
         writeln!(out, "#include <functional>");

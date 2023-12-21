@@ -462,12 +462,20 @@ const char *cxxbridge1$error(const char *ptr, std::size_t len) noexcept {
 } // extern "C"
 
 Error::Error(const Error &other)
-    : std::exception(other),
+    :
+#ifndef RUST_CXX_NO_EXCEPTIONS
+      std::exception(other),
+#endif // RUST_CXX_NO_EXCEPTIONS
       msg(other.msg ? errorCopy(other.msg, other.len) : nullptr),
-      len(other.len) {}
+      len(other.len) {
+}
 
 Error::Error(Error &&other) noexcept
-    : std::exception(std::move(other)), msg(other.msg), len(other.len) {
+    :
+#ifndef RUST_CXX_NO_EXCEPTIONS
+      std::exception(std::move(other)),
+#endif // RUST_CXX_NO_EXCEPTIONS
+      msg(other.msg), len(other.len) {
   other.msg = nullptr;
   other.len = 0;
 }
@@ -476,7 +484,9 @@ Error::~Error() noexcept { delete[] this->msg; }
 
 Error &Error::operator=(const Error &other) & {
   if (this != &other) {
+#ifndef RUST_CXX_NO_EXCEPTIONS
     std::exception::operator=(other);
+#endif // RUST_CXX_NO_EXCEPTIONS
     delete[] this->msg;
     this->msg = nullptr;
     if (other.msg) {
@@ -488,7 +498,9 @@ Error &Error::operator=(const Error &other) & {
 }
 
 Error &Error::operator=(Error &&other) &noexcept {
+#ifndef RUST_CXX_NO_EXCEPTIONS
   std::exception::operator=(std::move(other));
+#endif // RUST_CXX_NO_EXCEPTIONS
   delete[] this->msg;
   this->msg = other.msg;
   this->len = other.len;

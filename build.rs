@@ -6,13 +6,22 @@ fn main() {
     let manifest_dir_opt = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from);
     let manifest_dir = manifest_dir_opt.as_deref().unwrap_or(Path::new(""));
 
-    cc::Build::new()
+    let mut cc_build = cc::Build::new();
+
+    cc_build
         .file(manifest_dir.join("src/cxx.cc"))
         .cpp(true)
         .cpp_link_stdlib(None) // linked via link-cplusplus crate
         .flag_if_supported(cxxbridge_flags::STD)
-        .warnings_into_errors(cfg!(deny_warnings))
-        .compile("cxxbridge1");
+        .warnings_into_errors(cfg!(deny_warnings));
+
+    if cfg!(feature = "no-exceptions") {
+        cc_build
+            .flag("-fno-exceptions")
+            .define("RUST_CXX_NO_EXCEPTIONS", None);
+    }
+
+    cc_build.compile("cxxbridge1");
 
     println!("cargo:rerun-if-changed=src/cxx.cc");
     println!("cargo:rerun-if-changed=include/cxx.h");
